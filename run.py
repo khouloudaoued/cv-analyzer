@@ -5,14 +5,14 @@ from google.genai import types
 import json
 import os
 
-# --- 1. Configuration de la page ---
+
 st.set_page_config(
     page_title="AI CV Analyzer & Improver Pro",
     page_icon="💼",
     layout="wide"
 )
 
-# --- 2. Logique d'extraction du PDF ---
+
 def extract_text_from_pdf(file_bytes) -> str:
     text = ""
     try:
@@ -25,7 +25,7 @@ def extract_text_from_pdf(file_bytes) -> str:
     except Exception:
         return ""
 
-# --- 3. Analyse principale du CV ---
+
 def analyze_cv_with_gemini(cv_text: str, job_description: str) -> dict:
     try:
         api_key = os.getenv("GEMINI_API_KEY")
@@ -58,14 +58,12 @@ def analyze_cv_with_gemini(cv_text: str, job_description: str) -> dict:
         """
 
         try:
-            # الموديل الرئيسي الأحدث
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json")
             )
         except Exception:
-            # الخطة البديلة المستقرة في حال وجود ضغط على السيرفر
             response = client.models.generate_content(
                 model='gemini-2.0-flash',
                 contents=prompt,
@@ -76,7 +74,7 @@ def analyze_cv_with_gemini(cv_text: str, job_description: str) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
-# --- 4. Fonctionnalité d'amélioration ---
+
 def generer_reformulation_sur_mesure(texte_original, objectif) -> str:
     try:
         api_key = os.getenv("GEMINI_API_KEY")
@@ -84,15 +82,22 @@ def generer_reformulation_sur_mesure(texte_original, objectif) -> str:
         
         prompt = f"Prends ce texte brut : '{texte_original}'. Reformule-le de manière extrêmement professionnelle pour un CV, optimisé ATS, avec pour objectif de : {objectif}. Donne uniquement le texte amélioré sans blabla."
         
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt
-        )
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
+        except Exception:
+            response = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=prompt
+            )
+            
         return response.text.strip()
     except Exception as e:
         return f"Erreur de génération : {str(e)}"
 
-# --- 5. Interface Utilisateur (UI) ---
+
 st.title("💼 AI CV Analyzer & Smart Improver Pro")
 st.markdown("### Analysez votre CV et générez des améliorations textuelles instantanées")
 st.write("---")
@@ -135,7 +140,6 @@ if st.button("🚀 Lancer l'analyse approfondie", use_container_width=True):
 if 'analysis_result' in st.session_state:
     analysis = st.session_state['analysis_result']
     
-    # --- Affichage du Score ---
     match_pct = analysis.get("match_percentage", 0)
     
     st.metric(label="📊 Score de Match ATS", value=f"{match_pct}%")
@@ -156,7 +160,6 @@ if 'analysis_result' in st.session_state:
     
     st.write("---")
     
-    # --- Suggestions ---
     st.markdown("### 💡 Suggestions d'Amélioration & Exemples Prêts à l'emploi")
     for sug in analysis.get("suggestions", []):
         with st.expander(f"🔍 {sug.get('critique')}"):
@@ -165,7 +168,6 @@ if 'analysis_result' in st.session_state:
 
     st.write("---")
     
-    # --- Outil d'amélioration dynamique ---
     st.markdown("### 🛠️ Outil d'Amélioration Sur-Mesure")
     texte_a_ameliorer = st.text_area("Votre texte actuel (ex: description d'une expérience) :", height=100)
     objectif_amelioration = st.selectbox("Objectif :", [
