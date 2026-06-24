@@ -58,20 +58,19 @@ def analyze_cv_with_gemini(cv_text: str, job_description: str) -> dict:
         """
 
         try:
+            # الموديل الرئيسي الأحدث
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json")
             )
-        except Exception as e:
-            if "503" in str(e) or "UNAVAILABLE" in str(e):
-                response = client.models.generate_content(
-                    model='gemini-1.5-flash',
-                    contents=prompt,
-                    config=types.GenerateContentConfig(response_mime_type="application/json")
-                )
-            else:
-                raise e
+        except Exception:
+            # الخطة البديلة المستقرة في حال وجود ضغط على السيرفر
+            response = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(response_mime_type="application/json")
+            )
 
         return json.loads(response.text)
     except Exception as e:
