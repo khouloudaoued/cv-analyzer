@@ -57,45 +57,30 @@ def analyze_cv_with_gemini(cv_text: str, job_description: str) -> dict:
         }}
         """
 
+        
         try:
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-1.5-flash',
                 contents=prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json")
             )
         except Exception:
-            response = client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(response_mime_type="application/json")
-            )
+            try:
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json")
+                )
+            except Exception:
+                response = client.models.generate_content(
+                    model='gemini-2.0-flash',
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json")
+                )
 
         return json.loads(response.text)
     except Exception as e:
         return {"error": str(e)}
-
-
-def generer_reformulation_sur_mesure(texte_original, objectif) -> str:
-    try:
-        api_key = os.getenv("GEMINI_API_KEY")
-        client = genai.Client(api_key=api_key)
-        
-        prompt = f"Prends ce texte brut : '{texte_original}'. Reformule-le de manière extrêmement professionnelle pour un CV, optimisé ATS, avec pour objectif de : {objectif}. Donne uniquement le texte amélioré sans blabla."
-        
-        try:
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt
-            )
-        except Exception:
-            response = client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=prompt
-            )
-            
-        return response.text.strip()
-    except Exception as e:
-        return f"Erreur de génération : {str(e)}"
 
 
 st.title("💼 AI CV Analyzer & Smart Improver Pro")
@@ -137,6 +122,7 @@ if st.button("🚀 Lancer l'analyse approfondie", use_container_width=True):
                 st.session_state['analysis_result'] = analysis
                 st.session_state['cv_text'] = cv_text
 
+
 if 'analysis_result' in st.session_state:
     analysis = st.session_state['analysis_result']
     
@@ -162,26 +148,19 @@ if 'analysis_result' in st.session_state:
     
     st.markdown("### 💡 Suggestions d'Amélioration & Exemples Prêts à l'emploi")
     for sug in analysis.get("suggestions", []):
-        with st.expander(f"🔍 {sug.get('critique')}"):
+        critique_text = sug.get('critique') or "Analyse"
+        with st.expander(f"🔍 {critique_text}"):
             st.markdown("**Version suggérée par l'IA :**")
-            st.code(sug.get('exemple_amelioration'), language="text")
+            
+            
+            version_corrigee = (
+                sug.get('exemple_amelioration') or 
+                sug.get('exemple_amélioration') or 
+                sug.get('exemple') or 
+                "Texte généré indisponible"
+            )
+            st.code(version_corrigee, language="text")
 
     st.write("---")
-    
-    st.markdown("### 🛠️ Outil d'Amélioration Sur-Mesure")
-    texte_a_ameliorer = st.text_area("Votre texte actuel (ex: description d'une expérience) :", height=100)
-    objectif_amelioration = st.selectbox("Objectif :", [
-        "Rendre plus percutant et professionnel",
-        "Mettre en valeur les compétences Cloud et CI/CD",
-        "Ajouter des verbes d'action orientés résultats (Tech)",
-        "Intehgrer les mots-clés de l'offre d'emploi"
-    ])
-    
-    if st.button("🪄 Générer la version améliorée"):
-        if texte_a_ameliorer:
-            with st.spinner("Réécriture en cours..."):
-                version_corrigee = generer_reformulation_sur_mesure(texte_a_ameliorer, objectif_amelioration)
-                st.success("Voici votre texte optimisé ! Vous n'avez plus qu'à le copier :")
-                st.code(version_corrigee, language="text")
-        else:
-            st.warning("Veuillez coller du texte d'abord.")
+    st.markdown("### 🎨 Conseils de mise en page")
+    st.info(analysis.get("formatting_review", "Aucun conseil de forme généré."))
