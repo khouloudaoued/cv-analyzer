@@ -1,6 +1,6 @@
 # 💼 AI CV Analyzer & Smart Improver Pro
 
-Une application web puissante et intelligente basée sur l'IA (**Gemini 2.5 Flash**) qui permet d'analyser l'adéquation entre un CV (au format PDF) et une offre d'emploi spécifique. L'application intègre également un outil de réécriture dynamique pour optimiser les sections de son CV pour les systèmes ATS (Applicant Tracking System).
+Une application web puissante et intelligente basée sur l'IA (**Gemini 1.5 Flash**) qui permet d'analyser l'adéquation entre un CV (au format PDF) et une offre d'emploi spécifique. L'application intègre également un outil de réécriture dynamique pour optimiser les sections de son CV pour les systèmes ATS (Applicant Tracking System).
 
 🚀 **Lien de l'application en production :** [https://cv-analyzer-6vinyxbkxua6wd5xlj57kc.streamlit.app/](https://cv-analyzer-6vinyxbkxua6wd5xlj57kc.streamlit.app/)
 
