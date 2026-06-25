@@ -28,9 +28,15 @@ def extract_text_from_pdf(file_bytes) -> str:
 
 def analyze_cv_with_gemini(cv_text: str, job_description: str) -> dict:
     try:
-        api_key = os.getenv("GEMINI_API_KEY")
+       
+        api_key_1 = os.getenv("GEMINI_API_KEY")
+        api_key_2 = os.getenv("GEMINI_API_KEY_BACKUP")
+        
+        
+        api_key = api_key_1 or api_key_2
+        
         if not api_key:
-            return {"error": "Clé API Gemini manquante."}
+            return {"error": "Clé API Gemini manquante dans les Secrets."}
         
         client = genai.Client(api_key=api_key)
         
@@ -118,10 +124,9 @@ if st.button("🚀 Lancer l'analyse approfondie", use_container_width=True):
             if "error" in analysis:
                 st.error(f"Erreur : {analysis['error']}")
             else:
-                st.balloons()
                 st.session_state['analysis_result'] = analysis
                 st.session_state['cv_text'] = cv_text
-
+                st.balloons() 
 
 if 'analysis_result' in st.session_state:
     analysis = st.session_state['analysis_result']
@@ -151,7 +156,6 @@ if 'analysis_result' in st.session_state:
         critique_text = sug.get('critique') or "Analyse"
         with st.expander(f"🔍 {critique_text}"):
             st.markdown("**Version suggérée par l'IA :**")
-            
             
             version_corrigee = (
                 sug.get('exemple_amelioration') or 
